@@ -1,0 +1,36 @@
+import assert from 'node:assert/strict';
+import {createRequire} from 'node:module';
+import {mkdtemp,readFile} from 'node:fs/promises';
+import os from 'node:os';import path from 'node:path';
+import {execFileSync} from 'node:child_process';
+const base=new URL(process.env.TLINK_WORKER_URL??'');
+if(base.protocol!=='https:'||!base.hostname.endsWith('.workers.dev')||base.pathname!=='/')throw Error('배포된 workers.dev 원본 주소만 입력하세요.');
+const require=createRequire(import.meta.url),{chromium}=require(process.env.PLAYWRIGHT_CORE||'playwright-core');
+const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,headless:true});
+try{
+ const dir=await mkdtemp(path.join(os.tmpdir(),'tlink-worker-prod-')),p=await browser.newPage({viewport:{width:1440,height:900},reducedMotion:'reduce'});
+ const root=base.origin,errs=[];p.on('pageerror',e=>errs.push(e.message));const r=path=>p.request.get(root+path);
+ for(const url of ['/','/studio','/assets/rec-install-3.jpg','/api/status'])assert.equal((await r(url)).status(),200,url);
+ for(const url of ['/.env','/%2eenv','/project-env.mjs','/worker.mjs'])assert.equal((await r(url)).status(),404,url);
+ assert.equal((await (await r('/api/status')).json()).openaiAvailable,true);
+ const bad=await p.request.post(root+'/api/analyze',{headers:{'origin':'https://elsewhere.invalid','sec-fetch-site':'cross-site'},data:{image:'/9j/AAAA'}});
+ assert.equal(bad.status(),403);
+ await p.goto(root);
+ await p.waitForFunction(()=>document.querySelectorAll('[data-renderer=canvas-3d]').length===3);
+ await p.goto(root+'/studio');
+ const ar=p.waitForResponse(x=>x.url()===root+'/api/analyze',{timeout:90_000});
+ await p.locator('#upload').setInputFiles('public/assets/rec-install-3.jpg');
+ const v=await ar,d=await v.json();assert.equal(v.status(),200,JSON.stringify(d));assert(d.points.length>0);
+ await p.locator('.candidate button').first().click();
+ await p.fill('#label','소형 미러링 스위치 허브');await p.fill('#explanation','책상 위에 소형 미러링 스위치 허브를 놓았습니다.');
+ await p.click('#approve');await p.waitForFunction(()=>document.querySelectorAll('#cardStrip canvas').length===3);
+ const text=p.waitForResponse(x=>x.url()===root+'/api/marketing',{timeout:90_000});await p.click('#suggestCopy');
+ const t=await text,j=await t.json();assert.equal(t.status(),200,JSON.stringify(j));assert(typeof j.headline==='string'&&j.headline&&typeof j.lead==='string'&&j.lead);
+ const [html]=await Promise.all([p.waitForEvent('download'),p.click('#downloadHTML')]);
+ const dest=path.join(dir,'case.html');await html.saveAs(dest);assert.match(await readFile(dest,'utf8'),/소형 미러링 스위치 허브/);
+ const [zip]=await Promise.all([p.waitForEvent('download'),p.click('#downloadCards')]);const bundle=path.join(dir,'cards.zip');await zip.saveAs(bundle);
+ execFileSync('unzip',['-t',bundle]);assert.equal(execFileSync('unzip',['-Z1',bundle]).toString().trim().split('\n').length,3);
+ const off=await browser.newContext({offline:true});const local=await off.newPage();await local.goto('file://'+dest);await local.waitForFunction(()=>document.querySelectorAll('[data-renderer=canvas-3d]').length===3);await off.close();
+ assert.deepEqual(errs,[]);
+ console.log(JSON.stringify({root,visionCandidates:d.points.length,visionSeconds:d.elapsed,marketing:'200',offlineModelCount:3,validPNGCount:3,files:dir}));
+}finally{await browser.close()}

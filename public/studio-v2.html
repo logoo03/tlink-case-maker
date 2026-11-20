@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="ko" data-type="software" data-radius="sharp" data-buttons="solid" data-motion="quiet"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#10191f"><meta name="page-type" content="software"><meta name="site-kind" content="software"><meta name="description" content="티링크 설치 사진에서 장비 윤곽을 편집하고 고객용 웹 사례와 카드 세 장을 만듭니다."><title>티링크 케이스메이커 | 스튜디오</title><link rel="stylesheet" href="/studio-v2.css"><script type="module" src="/studio-v2.js"></script></head>
+<body>
+<a class="skip" href="#reviewStep">사진 편집으로 건너뛰기</a>
+<header class="mast layout"><div class="brand"><b>T<span>.</span>LINK</b><span>케이스메이커</span></div></header>
+<main class="layout">
+<div class="intro" data-enter><h1>설치 사진을<br>고객용 사례로<span>.</span></h1><p>사진에서 장비를 표시하고 웹 사례와 인스타그램 카드 3장을 만드세요.</p></div>
+<nav class="steps" aria-label="스튜디오 단계"><a href="#reviewStep"><strong>01</strong> 사진·마스크 검토</a><a href="#deliveryStep" id="deliveryNav" aria-disabled="true"><strong>02</strong> 홍보 콘텐츠 생성</a></nav>
+<section class="stage" id="reviewStep" aria-labelledby="reviewHeading">
+ <div class="stageHead"><div><h2 id="reviewHeading">사진·마스크 검토</h2><p>사진을 올리면 장비 윤곽을 자동으로 분석합니다.<br><small>새로 올린 사진은 분석에 필요한 크기로 줄여 OpenAI에 보냅니다.</small></p></div><div class="stageTools"><label class="file button">사진 올리기<input id="upload" type="file" accept="image/jpeg,image/png,image/webp"></label><label class="sampleField"><span class="sr">공식 사례 예시</span><select id="sample"><option value="">공식 사례 선택</option></select></label></div></div>
+ <div class="workbench">
+  <section class="surface" aria-label="사진 편집 영역">
+   <div class="toolrail"><div><button id="draw" type="button" disabled><b>+</b> 윤곽 그리기</button><button id="finish" type="button" hidden>윤곽 닫기</button><button id="keyboardRect" type="button" hidden>기본 윤곽 추가</button><button id="cancelDraw" type="button" hidden>그리기 취소</button></div><button id="undo" type="button" disabled>↶ 실행 취소</button></div>
+   <div class="under"><span id="photoName">선택된 사진 없음</span><span>윤곽을 끌어 이동 · 꼭짓점으로 정밀 조정</span></div><div class="photoStage" id="photoStage">
+    <div class="empty" id="empty"><span aria-hidden="true">▧</span><strong>사진을 올리면 편집이 시작됩니다</strong><small>JPG, PNG, WebP · 최대 20MB</small></div>
+    <div id="photoBoard" class="photoBoard" hidden><img id="photo" alt="선택된 설치 현장" draggable="false"><svg id="maskOverlay" role="group" tabindex="0" aria-label="장비 윤곽 편집. 꼭짓점에서 화살표로 위치를 수정할 수 있습니다." viewBox="0 0 100 100" preserveAspectRatio="none"></svg><div class="scan" aria-hidden="true"></div></div>
+   </div>
+  </section>
+  <aside class="inspector" aria-label="마스크 목록과 설명">
+   <div class="inspectHead"><h3>작업 목록</h3><span id="maskCount">0 / 4</span></div>
+   <div id="maskList"></div>
+   <div class="editing" id="fields" hidden>
+    <div class="fieldHead"><span id="selectedOrigin"></span><button id="deleteMask" type="button">윤곽 삭제</button></div>
+    <label for="label">장비 이름</label><input id="label" type="text" maxlength="48" placeholder="예: 벽걸이 녹취 서버">
+    <label for="explanation">고객에게 보일 설명</label><textarea id="explanation" rows="3" maxlength="200" placeholder="직접 확인한 내용만 적으세요."></textarea>
+   </div>
+   <details id="candidateBox" class="candidates" hidden><summary>OpenAI 제안 후보 <span id="candidateCount"></span></summary><p>먼저 작업 목록에 가져온 뒤 사진과 설명을 검토하세요.</p><div id="candidates"></div></details>
+  </aside>
+ </div>
+ <div class="reviewBottom"><p id="notice" role="status">설치 사진을 올리거나 공식 예시를 선택하세요.</p><button class="primary" id="approve" type="button" disabled>검토 완료 · 홍보물 생성 <span aria-hidden="true">↓</span></button></div>
+</section>
+<section class="stage deliver" id="deliveryStep" aria-labelledby="deliveryHeading">
+ <div class="stageHead"><div><h2 id="deliveryHeading" tabindex="-1">홍보 콘텐츠 생성</h2><p>승인한 사진과 설명에서 웹 사례와 인스타그램 카드를 만듭니다.</p></div><button id="editAgain" type="button" hidden>마스크 다시 편집 ↑</button></div>
+ <div id="waiting" class="deliveryWait">사진과 장비를 검토하고 승인하면 자동으로 고객용 미리보기가 열립니다.</div>
+ <div id="result" hidden>
+  <div class="outputOptions"><label>고객의 관심사<select id="angle"><option value="install">설치 공간</option><option value="mobile">사무실·외근 통합</option><option value="summary">상담 기록 업무</option></select></label><div><label for="brief">편집 요청 <small>선택</small></label><div class="brief"><input id="brief" maxlength="180" placeholder="예: 더 짧게, 설명 중심"><button id="regenerate" type="button">다시 생성</button></div></div></div>
+  <div class="copyAI" id="copyAI" hidden><p>이 버튼은 승인된 장비 설명과 편집 요청만 OpenAI에 보냅니다. 사진은 보내지 않습니다.</p><button id="suggestCopy" type="button" disabled>카피 제안받기</button></div>
+  <div id="copyProposal" hidden><p id="copyProposalText"></p><button id="applyCopy" type="button">검토한 문구 적용</button></div>
+  <div class="previewHead"><div><small id="copyMode">승인한 설명으로 자동 구성</small><h3 id="headline"></h3><p id="lead"></p></div><a href="https://www.tlinkcrm.com/center.php" target="_blank" rel="noopener">설치 상담 ↗</a></div>
+  <div class="carousel" id="cardStrip" aria-label="인스타그램 카드 세 장"></div>
+  <div class="downloads"><button id="downloadHTML" class="primary" type="button">독립 HTML 저장 ↓</button><button id="downloadCards" type="button">인스타그램 PNG 3장 ZIP ↓</button><span role="status" id="downloadStatus"></span></div>
+ </div>
+</section>
+</main>
+<footer class="layout footer"><span>티링크 케이스메이커</span></footer>
+</body></html>

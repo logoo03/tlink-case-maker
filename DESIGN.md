@@ -1,0 +1,2 @@
+# Field proof, editorial not decorative
+A light cream workspace for everyday operators, split between a large monochrome-framed field photograph and tightly typeset evidence lines. Signal green marks only actions or evidence, navy-black marks editorial headers. The main authored moment is selecting a point on the untouched photo and showing the citation/description beside it. Korean information hierarchy first; wide screen demo and compact single-column on mobile.

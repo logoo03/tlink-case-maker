@@ -1,0 +1,33 @@
+name = "tlink-installation-guide"
+main = "worker.mjs"
+compatibility_date = "2026-11-20"
+workers_dev = true
+preview_urls = false
+upload_source_maps = false
+
+[assets]
+directory = "./public"
+binding = "ASSETS"
+run_worker_first = true
+html_handling = "none"
+not_found_handling = "none"
+
+[vars]
+# Exact production HTTPS origin; API fails closed without it.
+TLINK_ORIGIN = "https://tlink-installation-guide.hyunjun-j0003.workers.dev"
+
+[[ratelimits]]
+name = "STUDIO_RATE_LIMIT"
+namespace_id = "261120457"
+  [ratelimits.simple]
+  limit = 5
+  period = 60
+
+
+[[durable_objects.bindings]]
+name = "STUDIO_BUDGET"
+class_name = "StudioBudget"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["StudioBudget"]

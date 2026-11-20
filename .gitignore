@@ -1,0 +1,14 @@
+.DS_Store
+*.log
+.env*
+node_modules/
+
+outputs/
+archive/
+.taste-skill/
+.dev.vars*
+.wrangler/
+
+# Old experiments depend on unshipped prototype assets.
+/test/annotations.test.mjs
+/scripts/reel/
