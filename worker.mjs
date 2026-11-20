@@ -94,7 +94,10 @@ async function runAPI(req,u,env,transport){
   return json({...result,model:OPENAI_MODEL,elapsed:Math.round((Date.now()-t)/1000)});
  }catch(e){return e instanceof OpenAIRequestError?denied(e.message,e.status):denied('요청을 처리하지 못했습니다.',503);}
 }
-export function createWorker({transport=fetch}={}){
+// Workerd does not implement redirect:'error'. Manual mode likewise never forwards
+// bearer credentials to a redirected host, and the shared wrapper rejects all 3xx.
+export const workerTransport=(url,init)=>globalThis.fetch(url,{...init,redirect:'manual'});
+export function createWorker({transport=workerTransport}={}){
  return {async fetch(request,env){
   const u=new URL(request.url), host=request.headers.get('Host'), path=u.pathname;
   if(!secure(u)||u.username||u.password||host&&host.toLowerCase()!==u.host.toLowerCase())return denied('주소를 확인하세요.',403);

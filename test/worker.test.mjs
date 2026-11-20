@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFile,readdir} from 'node:fs/promises';
-import {createWorker} from '../worker.mjs';
+import {createWorker,workerTransport} from '../worker.mjs';
 import {server} from '../server.mjs';
 const origin='https://demo-tlink.workers.dev';
 const H={origin,'cf-connecting-ip':'192.0.2.2','sec-fetch-site':'same-origin','content-type':'application/json'};
@@ -69,4 +69,12 @@ test('global SQLite budget accepts precisely 40 concurrent attempts in one UTC d
  assert.equal(spent.filter(x=>x.status===429).length,7);
  assert.equal(db.prepare('SELECT used FROM quota').get().used,40);
  db.close();
+});
+
+test('Workerd fetch uses manual redirects so bearer secrets never follow a redirect',async()=>{
+ const original=globalThis.fetch;
+ try{
+  globalThis.fetch=async(url,init)=>{assert.equal(url,'https://api.openai.com/v1/responses');assert.equal(init.redirect,'manual');return Response.redirect('https://other.invalid');};
+  const r=await workerTransport('https://api.openai.com/v1/responses',{redirect:'error'});assert.equal(r.status,302);
+ }finally{globalThis.fetch=original;}
 });

@@ -15,9 +15,9 @@ try{
  assert.equal((await (await r('/api/status')).json()).openaiAvailable,true);
  const bad=await p.request.post(root+'/api/analyze',{headers:{'origin':'https://elsewhere.invalid','sec-fetch-site':'cross-site'},data:{image:'/9j/AAAA'}});
  assert.equal(bad.status(),403);
- await p.goto(root);
+ await p.goto(root);assert.match(await p.title(),/티링크 케이스메이커/);
  await p.waitForFunction(()=>document.querySelectorAll('[data-renderer=canvas-3d]').length===3);
- await p.goto(root+'/studio');
+ await p.goto(root+'/studio');assert.match(await p.title(),/티링크 케이스메이커/);
  const ar=p.waitForResponse(x=>x.url()===root+'/api/analyze',{timeout:90_000});
  await p.locator('#upload').setInputFiles('public/assets/rec-install-3.jpg');
  const v=await ar,d=await v.json();assert.equal(v.status(),200,JSON.stringify(d));assert(d.points.length>0);
